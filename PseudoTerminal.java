@@ -24,6 +24,7 @@ import org.apache.hadoop.io.WritableComparable;
 import MapReduce.SelectJar;
 import MapReduce.SelectMapper;
 import MapReduce.SelectReducer;
+import sun.security.util.Length;
 public class PseudoTerminal{
 
 
@@ -66,11 +67,29 @@ public class PseudoTerminal{
                 switch(parsedArgs[0])
                 {
                     case "load":    
-                        System.out.println("Loading");
+                        try{
+                            String nameOfSchema = parsedArgs[1];
+                            if(parsedArgs[2] == "as")
+                            {
+                                int k = 0;
+                                for(int i = 1; i<parsedArgs[3].length(); i++)
+                                {
+                                    int l = 0;
+                                    String[] columsStrings;
+                                    // Add column names here
+                                }
+                            }
+                        
+                        }   catch(Exception e) {
+
+                            System.out.println("Syntax Error");    
+                        
+                        }
                         break;
                     
                     case "select":
                         try {
+
                             String columns = parsedArgs[1];
                             String schema = parsedArgs[3]; 
                             selectClause(columns, schema);
