@@ -3,6 +3,8 @@ import java.io.*;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.*;
+import java.io.File;
+import java.io.FileWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -69,17 +71,18 @@ public class PseudoTerminal{
                     case "load":    
                         try{
                             String nameOfSchema = parsedArgs[1];
+                            String[] columsStrings = new String[parsedArgs[3].length()];
                             if(parsedArgs[2] == "as")
                             {
-                                int k = 0;
-                                for(int i = 1; i<parsedArgs[3].length(); i++)
-                                {
-                                    int l = 0;
-                                    String[] columsStrings;
-                                    // Add column names here
-                                }
+                                columsStrings = parsedArgs[3].split(",");
                             }
-                        
+                            FileWriter fp = new FileWriter("schema-" + nameOfSchema + ".txt");
+                            for(int i = 0; i<columsStrings.length; i++)
+                            {
+                                fp.write(columsStrings[i]);
+                            }
+                            fp.close();
+                            
                         }   catch(Exception e) {
 
                             System.out.println("Syntax Error");    
