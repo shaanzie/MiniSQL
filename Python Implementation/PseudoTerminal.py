@@ -24,8 +24,18 @@ def load(query):
 
 def select(query):
 
+    if(query[1] == '*'):
+
+        identity_map(query[3], query[5])
+
+    else:
+
+        project(query[1], query[3], query[5])
+
 
 def delete(query):
+
+    delete_table(query[1])
 
 
 while(True):
