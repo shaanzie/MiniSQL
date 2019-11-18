@@ -30,7 +30,7 @@ import sun.security.util.Length;
 public class PseudoTerminal{
 
 
-    static void selectClause(String columns, String schema)
+    static void selectClause(String columns, String schema, String where)
     {   
         Configuration conf = new Configuration();
         Job job1 = Job.getInstance(conf, "SelectJob");
@@ -95,7 +95,8 @@ public class PseudoTerminal{
 
                             String columns = parsedArgs[1];
                             String schema = parsedArgs[3]; 
-                            selectClause(columns, schema);
+                            String where = parsedArgs[5] + " " + parsedArgs[7];
+                            selectClause(columns, schema, where);
 
                         } catch (Exception e) {
                             System.out.println("Syntax Error");    
