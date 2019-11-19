@@ -1,3 +1,7 @@
+  
+
+
+
 def parse_load(query):
 
     if(query[1] == "*.csv"):

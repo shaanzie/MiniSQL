@@ -1,11 +1,23 @@
 import sys
+from operator import itemgetter
 
-for line in sys.stdin:
+def mapper(where_dict):
 
-    line = line.strip()
-
-    words = line.split()
-
-    for word in words:
+    for line in sys.stdin:
         
-        print('%s\t%s' % (word, 1))
+        line = line.strip()
+
+        columns = line.split(",")
+
+        if(where_dict.empty()):
+
+            print("%s\t%s", (columns, 1))
+
+        else:
+            for keys in where_dict.keys:
+
+                if(columns['\i'] == where_dict['\i']):
+
+                    print("%s\t%s", (columns, 1))
+
+  

@@ -1,31 +1,42 @@
-from operator import itemgetter
-import sys
+def reducer():
 
-current_word = None
-current_count = 0
-word = None
 
-for line in sys.stdin:
-    
-    line = line.strip()
-    
-    word, count = line.split('\t', 1)
+    current_column = None
+    current_count = 0
+    word = None
 
-    try:
-        count = int(count)
-    except ValueError:
+
+
+    for line in sys.stdin:
         
-        continue
+        line = line.strip()
+    
+        columns, count = line.split('\t', 1)
 
+        try:
+            count = int(count)
 
-    if current_word == word:
-        current_count += count
-    else:
-        if current_word:
+        except ValueError:
             
-            print( '%s\t%s' % (current_word, current_count))
-        current_count = count
-        current_word = word
+            continue
 
-if current_word == word:
-    print ('%s\t%s' % (current_word, current_count))
+
+        if current_column == columns:
+            current_count += count
+        else:
+            if current_column:
+               
+               for column in current_column:
+
+                   print(column, end = "\t")
+
+            current_count = count
+            current_column = word
+
+    if current_column == columns:
+    
+        for column in current_column:
+
+            print(column, end = "\t")
+
+
