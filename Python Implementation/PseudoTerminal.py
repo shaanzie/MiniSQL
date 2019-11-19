@@ -47,8 +47,7 @@ while(True):
         exit(1)
     
     elif(query[0] == 'load' and parse_load(query)):
-        if(parse_load(query)):
-            load(query)
+        load(query)
     
     elif(query[0] == 'select' and parse_select(query)):
         select(query)
