@@ -1,7 +1,3 @@
-  
-
-
-
 def parse_load(query):
 
     if(query[1] == "*.csv"):
@@ -30,7 +26,7 @@ def select(query):
 
     if(query[1] == '*'):
 
-        identity_map(query[3], query[5])
+        mapper(query[3], query[5])
 
     else:
 
