@@ -59,7 +59,7 @@ projections = []
 
 # //assuming the query has a valid structure
 while valid and tokens[i] != "from":
-    projections.append(tokens[i])
+    projections.append(tokens[i].replace(",", ""))
     i += 1
 
 
@@ -80,7 +80,7 @@ if valid and tokens[i] == "where":
     while(tokens[i] != ';'):
         if tokens[i] == "and" or tokens[i] == "or":
             whereClauses.append(clause)
-            conjuntions.append(tokens[i])
+            conjunctions.append(tokens[i])
             i += 1
             clause = ""
         else:
@@ -97,12 +97,44 @@ elif valid and tokens[i] != ";":
 if valid:
     print(columnsInQuery)
     print(whereClausesMapper)
+    print(conjunctions)
 
 
-globalVars = "" # if aggregations like sum or max etc
-outputString = genOpString(columns)
+def genOpString(cols):
+    s = "print("
+    for col in cols:
+        s += "values[" + str(col) + "], "
+    s += "sep = ' ')\n"
+    return s
+
+def genWhereBlock(clauses, conjunctions):
+    if len(clauses) == 0:
+        return ""
+
+    s = "if "
+    i = 0
+    for clause in clauses:
+        s += "values[" + str(clause[0]) + "] " + clause[1]
+        if len(conjunctions) == i:
+            s += ":"
+        else :
+            s += " " + conjunctions[i] + " "
+        i += 1
+    s += "\n\t\t"
+    return s;
+
+# all aggregations will be done in the reducer
+outputString = genOpString(columnsInQuery)
+whereBlock = genWhereBlock(whereClausesMapper, conjunctions)
 
 imports = "import csv\nimport sys\n"
 
-processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(",")\n\t" + whereBlock + genOpString
-final = imports + globalVars + processAndPrint
+processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" + whereBlock + outputString
+mapper = imports + processAndPrint
+
+print('mapper : \n')
+print(mapper)
+
+genGlobalVars(aggregations) 
+globalVars = "" # if aggregations like sum or max etc
+reducer = imports + globalVars + process
