@@ -11,13 +11,20 @@ def getIndex(column, table):
 
 def parseProjections(projections, table):
     # //only columns for now
+    aggregations = []
     indices = []
     print(projections)
     for projection in projections:
-        if projection == "*":
-            return (list(range(0, len(tables[table]))), [])
-        indices.append(getIndex(projection, table))
-    return (indices, [])
+        if '(' in projection:
+            # this ones an aggregation.
+            aggr, col = projection.split('(')[0], projection.split('(')[1][:-1]
+            aggregations.append([aggr, getIndex(col, table)])
+        else:
+
+            if projection == "*":
+                return (list(range(0, len(tables[table]))), [])
+            indices.append(getIndex(projection, table))
+    return (indices, aggregations)
 
 def parseClauses(whereClauses, table):
     # assuming clauses only based on preexisting data
@@ -38,7 +45,7 @@ def parseClauses(whereClauses, table):
 
 tables = {"table1": ["1", "2", "3"]}
 # columns = set()
-aggregations = {"sum", "min", "max"}
+aggregations = {"sum", "min", "max", "avg", "count"}
 
 
 columnsInQuery = []
@@ -69,6 +76,7 @@ print(table)
 # //check if table is in tables set
 
 columnsInQuery, aggregationsInQuery = parseProjections(projections, table)
+print(aggregationsInQuery)
 # print(parseProjections(projections, table))
 i += 1
 
@@ -129,12 +137,53 @@ whereBlock = genWhereBlock(whereClausesMapper, conjunctions)
 
 imports = "import csv\nimport sys\n"
 
-processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" + whereBlock + outputString
+processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" + whereBlock + "print(line)\n"
 mapper = imports + processAndPrint
 
 print('mapper : \n')
 print(mapper)
 
-genGlobalVars(aggregations) 
-globalVars = "" # if aggregations like sum or max etc
+def genGlobalVars(aggregations):
+    s = ""
+    for aggr in aggregations:
+        if aggr[0] == "avg":
+            if "count" not in aggregations:
+                s += "countcol" + str(aggr[1]) + " = 0\n"
+            if "sum" not in aggregations:
+                s += "sumcol"+ str(aggr[1]) + " = 0\n"
+        else:
+            s += aggr[0] + "col" + str(aggr[1]) + " = 0\n"
+    return s
+
+def updateAggrs(aggrs):
+    s = ""
+    # print(aggrs)
+    for aggr in aggrs:
+        if aggr[0] == "sum" or aggr[0] == "avg":
+            s += "sumcol" + str(aggr[1]) + " += " + "values[" + str(aggr[1]) + "]\n\t"
+            # print(s)
+        if aggr[0] == "count" or aggr[0] == "avg":
+            s += "countcol" + str(aggr[1]) + " += " + "1\n\t"
+        elif aggr[0] == "max":
+            s += "if maxcol" + str(aggr[1]) + " < values[" + str(aggr[1]) + "]:\n\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+        elif aggr[0] == "min":
+            s += "if mincol" + str(aggr[1]) + " > values[" + str(aggr[1]) + "]:\n\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+    return s
+
+def printGlobalVars(aggrs):
+    s = ""
+    for aggr in aggrs:
+        if aggr[0] == "avg":
+                s += "print(\"average: \", sumcol" + str(aggr[1]) + "/countcol" + str(aggr[1]) + ")\n"
+        else:
+            s += "print(\"" + aggr[0] + ": \", " + aggr[0] + "col" + str(aggr[1]) + ")\n"
+    return s
+
+globalVars = genGlobalVars(aggregationsInQuery)
+updateStatements = updateAggrs(aggregationsInQuery)
+globalVarString = printGlobalVars(aggregationsInQuery)
+process = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" +  updateStatements + outputString + globalVarString
+
 reducer = imports + globalVars + process
+print("reducer: \n")
+print(reducer)
