@@ -14,11 +14,23 @@ def parse_load(query):
 
 def load(query):
 
+    table = dict()
+
+    database = query[1]
     columns = []
 
-    for i in query[3].split(","):
-            
-        columns.append(i)
+
+    for i in query[3][1:-1].split(","):
+        
+        columns.append(i.split(":")[0])
+
+    table[database] = columns
+
+    file = open('metastore.txt', 'a+')
+
+    file.write(str(table) + '\n')
+
+    file.close()
 
 
 
@@ -46,14 +58,14 @@ while(True):
     if(query[0] == 'exit'):
         exit(1)
     
-    elif(query[0] == 'load' and parse_load(query)):
+    elif(query[0] == 'load'):
         load(query)
     
-    elif(query[0] == 'select' and parse_select(query)):
-        select(query)
+    # elif(query[0] == 'select' and parse_select(query)):
+    #     select(query)
 
-    elif(query[0] == 'delete' and parse_delete(query)):
-        delete(query)
+    # elif(query[0] == 'delete' and parse_delete(query)):
+    #     delete(query)
 
     else:
         print("Query error!")
