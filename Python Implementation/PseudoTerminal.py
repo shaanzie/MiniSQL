@@ -33,21 +33,15 @@ def load(query):
     file.close()
 
 
-
-def select(query):
-
-    if(query[1] == '*'):
-
-        mapper(query[3], query[5])
-
-    else:
-
-        project(query[1], query[3], query[5])
-
-
 def delete(query):
 
-    delete_table(query[1])
+    with open('metastore.txt', 'r') as file:
+        lines = file.readlines()
+
+    with open('metastore.txt', 'w') as file:
+        for line in lines:
+            if query[1] not in line:
+                 file.write(line)
 
 
 while(True):
@@ -64,8 +58,8 @@ while(True):
     # elif(query[0] == 'select' and parse_select(query)):
     #     select(query)
 
-    # elif(query[0] == 'delete' and parse_delete(query)):
-    #     delete(query)
+    elif(query[0] == 'delete'):
+        delete(query)
 
     else:
         print("Query error!")
