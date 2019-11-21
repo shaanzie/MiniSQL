@@ -26,8 +26,9 @@ def parseProjections(projections, table):
         else:
 
             if projection == "*":
-                return (list(range(0, len(tables[table]))), [])
-            indices.append(getIndex(projection, table))
+                indices.extend(list(range(0, len(tables[table]))))
+            else:
+                indices.append(getIndex(projection, table))
     return (indices, aggregations)
 
 def getDataTypeFromName(col, table):
@@ -68,6 +69,9 @@ tableDataTypes = {"table1": ["int", "str", "float"]}
 # data types must be taken into account for aggregations min, max, sum, avg for strings
 # only allowed string comparisons are "==" and "!="
 # type casting is necessary for comparisons and updates
+
+
+# doesnt check if the thing being checked against in where is a string or not
 
 # columns = set()
 aggregations = {"sum", "min", "max", "avg", "count"}
@@ -147,7 +151,14 @@ def genWhereBlock(clauses, conjunctions):
     s = "if "
     i = 0
     for clause in clauses:
-        s += "values[" + str(clause[0]) + "] " + clause[1]
+        dt = getDataTypeFromIndex(clause[0], table)
+        if dt != "string":
+            ex0 = dt + "("
+            ex1 = ")"
+        else:
+            ex0 = ""
+            ex1 = ""
+        s += ex0 + "values[" + str(clause[0]) + "]" + ex1 + " " + clause[1]
         if len(conjunctions) == i:
             s += ":"
         else :
