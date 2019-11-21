@@ -1,0 +1,2 @@
+{'bigdata/thejas.csv': ['gay', 'year']}
+{'bigdata/prithvi.csv': ['lmao', 'eyebrow']}
