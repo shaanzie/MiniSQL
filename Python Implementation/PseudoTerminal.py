@@ -1,8 +1,8 @@
 import re
-from fabric.api import local
-from fabric.context_managers import settings
+# from fabric.api import local
+# from fabric.context_managers import settings
 import os
-import generate
+from generateCode import generate
 
 def file_on_hdfs(file):
 
@@ -116,12 +116,17 @@ def select(query):
 
     # Add the codegen stuff here
 
-    cmd = 'bin/hadoop jar contrib/streaming/hadoop-*streaming*.jar \
-            -file /home/hduser/mapper.py    -mapper /home/hduser/mapper.py \
-            -file /home/hduser/reducer.py   -reducer /home/hduser/reducer.py \
-            -input /user/hduser/hive/* -output /user/hduser/hive-output'
+    generate(query)
 
-    os.sys(cmd)
+    comd =  '$HADOOP_HOME/bin/hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-*streaming*.jar \
+            -file /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/mapper.py \
+            -mapper /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/mapper.py \
+            -file /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/reducer.py  \
+            -reducer /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/reducer.py  \
+            -input' +  query[3]  + '\
+            -output /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/hello'
+
+    os.system(comd)
 
     
 
@@ -155,7 +160,7 @@ while(True):
     elif(query[0] == 'load' and parse_load(query)):
         load(query)
     
-    elif(query[0] == 'select' and parse_select(query)):
+    elif(query[0] == 'select'):
         select(query)
 
     elif(query[0] == 'delete' and parse_delete(query)):
