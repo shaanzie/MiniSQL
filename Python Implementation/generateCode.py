@@ -26,25 +26,45 @@ def parseProjections(projections, table):
             indices.append(getIndex(projection, table))
     return (indices, aggregations)
 
+def getDataTypeFromName(col, table):
+    return tableDataTypes[table][getIndex(col, table)]
+
+def getDataTypeFromIndex(ind, table):
+    return tableDataTypes[table][col]
+
 def parseClauses(whereClauses, table):
     # assuming clauses only based on preexisting data
     parsedClauses = []
     for clause in whereClauses:
-        if "<" in clause:
+        if '==' in clause:
+            s = '=='
+        elif "<" in clause:
             s = "<"
         elif ">" in clause:
             s = ">"
         elif "!" in clause:
             s = "!"
-        elif "=" in clause:
-            s = "="
+        
         col, condn = clause.split(s)[0], s + clause.split(s)[1]
-        parsedClauses.append((getIndex(col, table), condn))
+
+        dt = getDataTypeFromName(col, table)
+        print(dt)
+        if dt == "str" and ">" in condn or "<" in condn:
+            raise Exception("cannot perform operation on a string data tpye.\n")
+        elif dt in {"int", "float", "str"}:
+            parsedClauses.append((getIndex(col, table), condn))
+        else:
+            raise Exception("invalid data type")
     return parsedClauses, []
 
 
 tables = {"table1": ["1", "2", "3"]}
 tableDataTypes = {"table1": ["int", "str", "float"]}
+
+# data types must be taken into account for aggregations min, max, sum, avg for strings
+# only allowed string comparisons are "==" and "!="
+# type casting is necessary for comparisons and updates
+
 # columns = set()
 aggregations = {"sum", "min", "max", "avg", "count"}
 
