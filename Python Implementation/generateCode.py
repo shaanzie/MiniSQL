@@ -44,6 +44,7 @@ def parseClauses(whereClauses, table):
 
 
 tables = {"table1": ["1", "2", "3"]}
+tableDataTypes = {"table1": ["int", "str", "float"]}
 # columns = set()
 aggregations = {"sum", "min", "max", "avg", "count"}
 
@@ -145,11 +146,12 @@ print(mapper)
 
 def genGlobalVars(aggregations):
     s = ""
+
     for aggr in aggregations:
         if aggr[0] == "avg":
-            if "count" not in aggregations:
+            if ["count", aggr[1]]  not in aggregations:
                 s += "countcol" + str(aggr[1]) + " = 0\n"
-            if "sum" not in aggregations:
+            if ["sum", aggr[1]] not in aggregations:
                 s += "sumcol"+ str(aggr[1]) + " = 0\n"
         else:
             s += aggr[0] + "col" + str(aggr[1]) + " = 0\n"
@@ -159,10 +161,11 @@ def updateAggrs(aggrs):
     s = ""
     # print(aggrs)
     for aggr in aggrs:
-        if aggr[0] == "sum" or aggr[0] == "avg":
+        if (aggr[0] == "avg" and ["sum", aggr[1]] not in aggrs) or aggr[0] == "sum":
             s += "sumcol" + str(aggr[1]) + " += " + "values[" + str(aggr[1]) + "]\n\t"
+
             # print(s)
-        if aggr[0] == "count" or aggr[0] == "avg":
+        if (aggr[0] == "avg" and ["count", aggr[1]] not in aggrs) or aggr[0] == "count":
             s += "countcol" + str(aggr[1]) + " += " + "1\n\t"
         elif aggr[0] == "max":
             s += "if maxcol" + str(aggr[1]) + " < values[" + str(aggr[1]) + "]:\n\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
