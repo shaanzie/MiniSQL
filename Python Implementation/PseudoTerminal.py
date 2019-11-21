@@ -1,16 +1,21 @@
+import re
+
 def parse_load(query):
 
-    if(query[1] == "*.csv"):
-
+    if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[1])):
         if(query[2] == 'as'):
+            # if(re.search(r"(^\[ (([a-zA-Z0-9_\-\.]+) \: ([a-zA-Z0-9_\-\.]+) (\,) (\s) +) \]\;$)", query[3])):
+            for i in query[3][1:-1].split(","):
+                if(re.search(r"^([a-zA-Z0-9_\-\.]+)\:([a-zA-Z0-9_\-\.]+)", i)):
+                    return 1
+            else:
+                return -1
+        else:
+            return -2
+    else:
+        return -3
 
-            if(query[3] == "*.;"):
-
-                return True
-
-    return False
-
-
+    return 0
 
 def load(query):
 
@@ -47,18 +52,18 @@ def delete(query):
 while(True):
     
     print('>')
-    query = input().split(' ')
+    query = input().split(' ')    
 
     if(query[0] == 'exit'):
         exit(1)
     
-    elif(query[0] == 'load'):
+    elif(query[0] == 'load' and parse_load(query)):
         load(query)
     
     # elif(query[0] == 'select' and parse_select(query)):
     #     select(query)
 
-    elif(query[0] == 'delete'):
+    elif(query[0] == 'delete' and parse_delete(query)):
         delete(query)
 
     else:
