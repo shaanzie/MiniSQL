@@ -19,10 +19,13 @@ def exists(file):
 def parse_load(query):
 
     if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[1]) and exists(query[1])):
+
         if(query[2] == 'as'):
-            # if(re.search(r"(^\[ (([a-zA-Z0-9_\-\.]+) \: ([a-zA-Z0-9_\-\.]+) (\,) (\s) +) \]\;$)", query[3])):
+        
             for i in query[3][1:-1].split(","):
+        
                 if(re.search(r"^([a-zA-Z0-9_\-\.]+)\:([a-zA-Z0-9_\-\.]+)", i)):
+        
                     return 1
     return 0
     
