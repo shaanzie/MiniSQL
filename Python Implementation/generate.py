@@ -239,7 +239,9 @@ imports = "import csv\nimport sys\n"
 
 processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" + whereBlock + "print(line)\n"
 mapper = imports + processAndPrint
-
+file = open('mapper.py', 'w')
+file.write(mapper)
+file.close()
 print('mapper : \n')
 print(mapper)
 
@@ -251,5 +253,8 @@ globalVarString = printGlobalVars(aggregationsInQuery)
 process = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" +  updateStatements + outputString + globalVarString
 
 reducer = imports + globalVars + process
+file = open('reducer.py', 'w')
+file.write(reducer)
+file.close()
 print("reducer: \n")
 print(reducer)
