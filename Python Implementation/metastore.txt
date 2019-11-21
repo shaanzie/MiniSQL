@@ -1,2 +1,3 @@
 {'bigdata/thejas.csv': ['gay', 'year']}
 {'bigdata/prithvi.csv': ['lmao', 'eyebrow']}
+{'table1': [('1', 'int'), ('2', 'str'), ('3', 'float')]}
