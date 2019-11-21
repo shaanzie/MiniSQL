@@ -1,6 +1,7 @@
 import re
 from fabric.api import local
 from fabric.context_managers import settings
+import os
 
 def file_on_hdfs(file):
 
@@ -14,7 +15,7 @@ def file_on_hdfs(file):
     if(file_exists):
 
         return 1
-        
+
     return 0
 
 
@@ -78,8 +79,6 @@ def parse_delete(query):
         return 1
 
     return 0
-
-
     
 
 def load(query):
@@ -103,6 +102,19 @@ def load(query):
     file.close()
 
 
+def select(query):
+
+    # Add the codegen stuff here
+
+    cmd = 'bin/hadoop jar contrib/streaming/hadoop-*streaming*.jar \
+            -file /home/hduser/mapper.py    -mapper /home/hduser/mapper.py \
+            -file /home/hduser/reducer.py   -reducer /home/hduser/reducer.py \
+            -input /user/hduser/hive/* -output /user/hduser/hive-output'
+
+    os.sys(cmd)
+
+    
+
 def delete(query):
 
     with open('metastore.txt', 'r') as file:
@@ -125,8 +137,8 @@ while(True):
     elif(query[0] == 'load' and parse_load(query)):
         load(query)
     
-    # elif(query[0] == 'select' and parse_select(query)):
-    #     select(query)
+    elif(query[0] == 'select' and parse_select(query)):
+        select(query)
 
     elif(query[0] == 'delete' and parse_delete(query)):
         delete(query)
