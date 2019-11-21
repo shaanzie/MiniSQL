@@ -1,5 +1,5 @@
 query = input().lower()
-query = query.replace(';', ' ;')
+query = query.replace(';', ' ;').replace(",", ", ")
 tokens = query.split()
 
 # //assuming that only one table is used per query
@@ -34,7 +34,7 @@ def getDataTypeFromName(col, table):
     return tableDataTypes[table][getIndex(col, table)]
 
 def getDataTypeFromIndex(ind, table):
-    return tableDataTypes[table][col]
+    return tableDataTypes[table][ind]
 
 def parseClauses(whereClauses, table):
     # assuming clauses only based on preexisting data
@@ -181,20 +181,28 @@ def genGlobalVars(aggregations):
             s += aggr[0] + "col" + str(aggr[1]) + " = 0\n"
     return s
 
-def updateAggrs(aggrs):
+def updateAggrs(aggrs, table):
     s = ""
     # print(aggrs)
     for aggr in aggrs:
+        dt = getDataTypeFromIndex(aggr[1], table)
+        if dt != "string":
+            ex0 = dt + "("
+            ex1 = ")"
+        else:
+            ex0 = ""
+            ex1 = ""
+
         if (aggr[0] == "avg" and ["sum", aggr[1]] not in aggrs) or aggr[0] == "sum":
-            s += "sumcol" + str(aggr[1]) + " += " + "values[" + str(aggr[1]) + "]\n\t"
+            s += "sumcol" + str(aggr[1]) + " += " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + "\n\t"
 
             # print(s)
         if (aggr[0] == "avg" and ["count", aggr[1]] not in aggrs) or aggr[0] == "count":
             s += "countcol" + str(aggr[1]) + " += " + "1\n\t"
         elif aggr[0] == "max":
-            s += "if maxcol" + str(aggr[1]) + " < values[" + str(aggr[1]) + "]:\n\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+            s += "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
         elif aggr[0] == "min":
-            s += "if mincol" + str(aggr[1]) + " > values[" + str(aggr[1]) + "]:\n\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+            s += "if mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]:\n\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
     return s
 
 def printGlobalVars(aggrs):
@@ -207,7 +215,7 @@ def printGlobalVars(aggrs):
     return s
 
 globalVars = genGlobalVars(aggregationsInQuery)
-updateStatements = updateAggrs(aggregationsInQuery)
+updateStatements = updateAggrs(aggregationsInQuery, table)
 globalVarString = printGlobalVars(aggregationsInQuery)
 process = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" +  updateStatements + outputString + globalVarString
 
