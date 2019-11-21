@@ -1,6 +1,28 @@
 import re
+from fabric.api import local
+from fabric.context_managers import settings
+
+def file_on_hdfs(file):
+
+    file_exists = False
+
+    with settings(warn_only = True):
+
+        results = local('hadoop fs -stat hdfs://' + file, capture = True)
+        file_exists = results.succeeded
+
+    if(file_exists):
+
+        return 1
+        
+    return 0
+
 
 def exists(file):
+
+    if(not file_on_hdfs(file)):
+
+        return 0
 
     with open('metastore.txt', 'r') as file:
 
