@@ -2,6 +2,7 @@ import re
 from fabric.api import local
 from fabric.context_managers import settings
 import os
+import generate
 
 def file_on_hdfs(file):
 
@@ -83,21 +84,30 @@ def parse_delete(query):
 
 def load(query):
 
-    table = dict()
-
+    table_columns = dict()
+    table_datatypes = dict()
     database = query[1]
     columns = []
+    datatypes = []
 
 
     for i in query[3][1:-1].split(","):
         
         columns.append(i.split(":")[0])
+        datatypes.append(i.split(":")[1])
 
-    table[database] = columns
+    table_columns[database] = columns
+    table_datatypes[database] = datatypes
 
     file = open('metastore.txt', 'a+')
 
-    file.write(str(table) + '\n')
+    file.write(str(table_columns) + '\n')
+
+    file.close()
+
+    file = open('metastore-datatypes.txt', 'a+')
+
+    file.write(str(table_datatypes) + '\n')
 
     file.close()
 
@@ -121,6 +131,14 @@ def delete(query):
         lines = file.readlines()
 
     with open('metastore.txt', 'w') as file:
+        for line in lines:
+            if query[1] not in line:
+                 file.write(line)
+
+    with open('metastore-datatypes.txt', 'r') as file:
+        lines = file.readlines()
+
+    with open('metastore-datatypes.txt', 'w') as file:
         for line in lines:
             if query[1] not in line:
                  file.write(line)
