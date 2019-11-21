@@ -1,28 +1,16 @@
 import ast
-#
-# query = input().lower()
-# query = query.replace(';', ' ;').replace(",", ", ")
-# tokens = query.split()
 
-# //assuming that only one table is used per query
-# //store output of a query?
-# // point to hdfs location?
 
 def getIndex(column, table, tables):
     i = 0
     colNames = [x[0] for x in tables[table]]
     return colNames.index(column.strip())
-    # # for i in range(0, len(tables[table])):
-    # #     print(tables[table][i][0], "searching for: ", column)
-    # #     if str(tables[table][i][0]) == str(column):
-    # #         return i
-    # raise Exception("column not found")
 
 def parseProjections(projections, table, tables):
     # //only columns for now
     aggregations = []
     indices = []
-    print(projections)
+
     for projection in projections:
         if '(' in projection:
             # this ones an aggregation.
@@ -61,10 +49,8 @@ def parseClauses(whereClauses, table, tables):
 
         col, condn = clause.split(s)[0], s + clause.split(s)[1]
 
-        print(col, "aggr")
         dt = getDataTypeFromName(col, table, tables)
 
-        print(dt)
         if dt == "str" and (">" in condn or "<" in condn):
             raise Exception("cannot perform operation on a string data tpye.\n")
         elif dt in {"int", "float", "str"}:
@@ -119,7 +105,6 @@ def genGlobalVars(aggregations):
 
 def updateAggrs(aggrs, table, tables):
     s = ""
-    # print(aggrs)
     for aggr in aggrs:
         dt = getDataTypeFromIndex(aggr[1], table, tables)
         if dt != "string":
@@ -132,14 +117,16 @@ def updateAggrs(aggrs, table, tables):
         if (aggr[0] == "avg" and ["sum", aggr[1]] not in aggrs) or aggr[0] == "sum":
             s += "sumcol" + str(aggr[1]) + " += " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + "\n\t"
 
-            # print(s)
         if (aggr[0] == "avg" and ["count", aggr[1]] not in aggrs) or aggr[0] == "count":
             s += "countcol" + str(aggr[1]) + " += " + "1\n\t"
+
         elif aggr[0] == "max":
             s += "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+
         elif aggr[0] == "min":
             s += "if mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]:\n\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
-    return s
+
+    return s + '\n\t'
 
 def printGlobalVars(aggrs):
     s = ""
@@ -149,12 +136,6 @@ def printGlobalVars(aggrs):
         else:
             s += "print(\"" + aggr[0] + ": \", " + aggr[0] + "col" + str(aggr[1]) + ")\n"
     return s
-
-
-#
-#
-# tables = {"table1": ["1", "2", "3"]}
-# tableDataTypes = {"table1": ["int", "str", "float"]}
 
 
 def generate(query):
@@ -195,24 +176,21 @@ def generate(query):
 
     i += 1
     table = tokens[i]
-    print(table)
 
     tables = dict()
     with open('metastore.txt', 'r') as file:
         lines = file.readlines()
-        # print(line)
         for line in lines:
             if table in line:
-                print(line)
                 tables.update(ast.literal_eval(line))
 
-    print(tables)
+
 
     # //check if table is in tables set
 
     columnsInQuery, aggregationsInQuery = parseProjections(projections, table, tables)
-    print(aggregationsInQuery)
-    # print(parseProjections(projections, table))
+
+
     i += 1
 
     conjunctions = []
@@ -229,41 +207,43 @@ def generate(query):
             else:
                 clause += tokens[i] + " "
                 i += 1
-        whereClauses.append(clause)
-        print(whereClauses)
 
+        whereClauses.append(clause)
         whereClausesMapper, whereClausesReducer = parseClauses(whereClauses, table, tables)
 
     elif valid and tokens[i] != ";":
             valid = 0
-
-    if valid:
-        print(columnsInQuery)
-        print(whereClausesMapper)
-        print(conjunctions)
 
 
     # all aggregations will be done in the reducer
     outputString = genOpString(columnsInQuery)
     whereBlock = genWhereBlock(whereClausesMapper, conjunctions, table, tables)
 
-    imports = "import csv\nimport sys\n"
+    imports = "import csv\nimport sys\n\n"
 
-    processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" + whereBlock + "print(line)\n"
+    processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" + whereBlock + "print(line)\n\n"
     mapper = imports + processAndPrint
 
     print('mapper : \n')
     print(mapper)
 
 
-    globalVars = genGlobalVars(aggregationsInQuery)
-    updateStatements = updateAggrs(aggregationsInQuery, table, tables)
+    globalVars = genGlobalVars(aggregationsInQuery) + '\n'
+    updateStatements = updateAggrs(aggregationsInQuery, table, tables) 
     globalVarString = printGlobalVars(aggregationsInQuery)
     process = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" +  updateStatements + outputString + globalVarString
 
     reducer = imports + globalVars + process
     print("reducer: \n")
     print(reducer)
+
+    if valid:
+        mFile = open("./mapper_generated.py", "w")
+        rFile = open("./reducer_generated.py", "w")
+        mFile.write(mapper)
+        rFile.write(reducer)
+        mFile.close()
+        rFile.close()
 
 if __name__ == '__main__':
     q = input()
