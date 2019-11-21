@@ -1,0 +1,4 @@
+*.pyc
+*test*
+*mapper_generated.py
+*reducer_generated.py
