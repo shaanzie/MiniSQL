@@ -8,13 +8,6 @@ def parse_load(query):
             for i in query[3][1:-1].split(","):
                 if(re.search(r"^([a-zA-Z0-9_\-\.]+)\:([a-zA-Z0-9_\-\.]+)", i)):
                     return 1
-            else:
-                return -1
-        else:
-            return -2
-    else:
-        return -3
-
     return 0
 
 def load(query):
