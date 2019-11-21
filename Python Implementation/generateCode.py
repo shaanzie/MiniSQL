@@ -18,7 +18,11 @@ def parseProjections(projections, table):
         if '(' in projection:
             # this ones an aggregation.
             aggr, col = projection.split('(')[0], projection.split('(')[1][:-1]
-            aggregations.append([aggr, getIndex(col, table)])
+            dt = getDataTypeFromName(col, table)
+            if dt == "str" and aggr != "count":
+                raise Exception("cannot perform the following aggregation on a string")
+            else:
+                aggregations.append([aggr, getIndex(col, table)])
         else:
 
             if projection == "*":
@@ -44,7 +48,7 @@ def parseClauses(whereClauses, table):
             s = ">"
         elif "!" in clause:
             s = "!"
-        
+
         col, condn = clause.split(s)[0], s + clause.split(s)[1]
 
         dt = getDataTypeFromName(col, table)
