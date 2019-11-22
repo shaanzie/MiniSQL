@@ -1,3 +1,4 @@
 {'test/test1.csv': [('col1', 'int')]}
 {'test/test.csv': [('col1', 'int'), ('col2', 'int')]}
 {'test/test.csv': [('col2', 'int')]}
+{'meh/meh.csv': [('col1', 'int')]}

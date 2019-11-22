@@ -128,12 +128,12 @@ def select(query):
     query = query.split(' ')
 
     comd =  '$HADOOP_HOME/bin/hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-*streaming*.jar \
-            -file /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/mapper.py \
-            -mapper /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/mapper.py \
-            -file /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/reducer.py  \
-            -reducer /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/reducer.py  \
-            -input' +  query[3]  + '\
-            -output /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/'
+            -file /home/shaanzie/Desktop/College/Sem%205/MiniSQL/PyImpl/mapper_generated.py \
+            -mapper /home/shaanzie/Desktop/College/Sem%205/MiniSQL/PyImpl/mapper_generated.py \
+            -file /home/shaanzie/Desktop/College/Sem%205/MiniSQL/PyImpl/reducer_generated.py  \
+            -reducer /home/shaanzie/Desktop/College/Sem%205/MiniSQL/PyImpl/reducer_generated.py  \
+            -input /' +  query[3][:-1]  + '\
+            -output /out1/'
 
     os.system(comd)
 
