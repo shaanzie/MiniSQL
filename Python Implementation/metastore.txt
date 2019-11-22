@@ -1,1 +1,3 @@
-{'table1': [('1', 'int'), ('2', 'str'), ('3', 'float')]}
+{'test/test1.csv': [('col1', 'int')]}
+{'test/test.csv': [('col1', 'int'), ('col2', 'int')]}
+{'test/test.csv': [('col2', 'int')]}

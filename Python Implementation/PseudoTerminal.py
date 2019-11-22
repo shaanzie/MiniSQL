@@ -22,9 +22,9 @@ def file_on_hdfs(file):
 
 def exists(file):
 
-    if(not file_on_hdfs(file)):
+    # if(not file_on_hdfs(file)):
 
-        return 0
+    #     return 0
 
     with open('metastore.txt', 'r') as file:
 
@@ -42,7 +42,7 @@ def exists(file):
 
 def parse_load(query):
 
-    if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[1]) and exists(query[1])):
+    if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[1])):
 
         if(query[2] == 'as'):
         
@@ -84,32 +84,39 @@ def parse_delete(query):
 
 def load(query):
 
+    query = query.split(' ')
+
     table_columns = dict()
-    table_datatypes = dict()
     database = query[1]
     columns = []
     datatypes = []
 
 
-    for i in query[3][1:-1].split(","):
+    for i in query[3][1:-2].split(","):
         
-        columns.append(i.split(":")[0])
-        datatypes.append(i.split(":")[1])
+        columns.append((i.split(":")[0], i.split(":")[1]))
 
     table_columns[database] = columns
-    table_datatypes[database] = datatypes
 
-    file = open('metastore.txt', 'a+')
+    with open('metastore.txt', 'a+') as file:
+        
+        lines = file.readlines()
+        
 
-    file.write(str(table_columns) + '\n')
+    flag = 0
 
-    file.close()
+    with open('metastore.txt', 'a+') as file:
 
-    file = open('metastore-datatypes.txt', 'a+')
-
-    file.write(str(table_datatypes) + '\n')
-
-    file.close()
+        for line in lines:
+            
+            if(query[1] in line):
+                flag = 1
+                file.write(str(table_columns) + '\n')
+            else:
+                file.write(line)
+        
+        if flag == 0:
+            file.write(str(table_columns) + '\n')
 
 
 def select(query):
@@ -118,19 +125,23 @@ def select(query):
 
     generate(query)
 
+    query = query.split(' ')
+
     comd =  '$HADOOP_HOME/bin/hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-*streaming*.jar \
             -file /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/mapper.py \
             -mapper /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/mapper.py \
             -file /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/reducer.py  \
             -reducer /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/reducer.py  \
             -input' +  query[3]  + '\
-            -output /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/hello'
+            -output /home/shaanzie/Desktop/College/Sem\ 5/MiniSQL/Python\ Implementation/'
 
     os.system(comd)
 
     
 
 def delete(query):
+
+    query = query.split(' ')
 
     with open('metastore.txt', 'r') as file:
         lines = file.readlines()
@@ -152,18 +163,19 @@ def delete(query):
 while(True):
     
     print('>')
-    query = input().split(' ')    
+    query = input()  
+    query_copy = query.split(' ')
 
-    if(query[0] == 'exit'):
+    if(query_copy[0] == 'exit'):
         exit(1)
     
-    elif(query[0] == 'load' and parse_load(query)):
+    elif(query_copy[0] == 'load' and parse_load(query_copy)):
         load(query)
     
-    elif(query[0] == 'select'):
+    elif(query_copy[0] == 'select'):
         select(query)
 
-    elif(query[0] == 'delete' and parse_delete(query)):
+    elif(query_copy[0] == 'delete' and parse_delete(query_copy)):
         delete(query)
 
     else:
