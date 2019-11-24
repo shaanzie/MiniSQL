@@ -123,10 +123,10 @@ def updateAggrs(aggrs, table, tables):
             s += "countcol" + str(aggr[1]) + " += " + "1\n\t"
 
         elif aggr[0] == "max":
-            s += "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+            s += "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "])" + ex1 + ":\n\t\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
 
         elif aggr[0] == "min":
-            s += "if mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]:\n\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+            s += "if mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]):\n\t\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
 
     return s + '\n\t'
 
@@ -233,7 +233,7 @@ def generate(query):
     globalVars = genGlobalVars(aggregationsInQuery) + '\n'
     updateStatements = updateAggrs(aggregationsInQuery, table, tables)
     globalVarString = printGlobalVars(aggregationsInQuery)
-    process = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" +  updateStatements + outputString + globalVarString
+    process = "for line in sys.stdin:\n\ttry:\n\t\tvalues = line.split(',')\n\t\t" +  updateStatements + "\t\t" + outputString + "\t\t" + globalVarString + "\n\texcept:\n\t\tprint('Query Error')"
 
     reducer = imports + globalVars + process
     print("reducer: \n")
