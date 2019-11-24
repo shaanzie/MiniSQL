@@ -61,10 +61,12 @@ def parseClauses(whereClauses, table, tables):
 
 
 def genOpString(cols):
-    s = "print("
-    for col in cols:
-        s += "values[" + str(col) + "], "
-    s += "sep = ' ')\n"
+    s = ""
+    if len(cols):
+        s += "print("
+        for col in cols:
+            s += "values[" + str(col) + "], "
+        s += "sep = ' ')\n"
     return s
 
 def genWhereBlock(clauses, conjunctions, table, tables):
@@ -229,7 +231,7 @@ def generate(query):
 
 
     globalVars = genGlobalVars(aggregationsInQuery) + '\n'
-    updateStatements = updateAggrs(aggregationsInQuery, table, tables) 
+    updateStatements = updateAggrs(aggregationsInQuery, table, tables)
     globalVarString = printGlobalVars(aggregationsInQuery)
     process = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" +  updateStatements + outputString + globalVarString
 
