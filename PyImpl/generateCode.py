@@ -101,8 +101,11 @@ def genGlobalVars(aggregations):
                 s += "countcol" + str(aggr[1]) + " = 0\n"
             if ["sum", aggr[1]] not in aggregations:
                 s += "sumcol"+ str(aggr[1]) + " = 0\n"
+        if aggr[0] == "min":
+            s += "mincol"+ str(aggr[1]) + " = sys.maxsize\n"
         else:
             s += aggr[0] + "col" + str(aggr[1]) + " = 0\n"
+
     return s
 
 def updateAggrs(aggrs, table, tables):
@@ -186,7 +189,7 @@ def generate(query):
             if table in line:
                 tables.update(ast.literal_eval(line))
 
-    # tables = {'table1': [('1', 'int'), ('2', 'string')]}
+    #tables = {'table1': [('1', 'int'), ('2', 'string')]}
 
     # //check if table is in tables set
 
