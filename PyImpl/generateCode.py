@@ -219,7 +219,7 @@ def generate(query):
     outputString = genOpString(columnsInQuery)
     whereBlock = genWhereBlock(whereClausesMapper, conjunctions, table, tables)
 
-    imports = "import csv\nimport sys\n\n"
+    imports = "#!/usr/bin/python3\nimport csv\nimport sys\n\n"
 
     processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" + whereBlock + "print(line)\n\n"
     mapper = imports + processAndPrint

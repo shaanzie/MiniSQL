@@ -133,7 +133,7 @@ def select(query):
             -file /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
             -reducer /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
             -input /' +  query[3][:-1]  + '\
-            -output /out5/'
+            -output /out9/'
 
 
     # print(comd)
