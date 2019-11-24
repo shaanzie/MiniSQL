@@ -123,6 +123,8 @@ def select(query):
 
     # Add the codegen stuff here
 
+    os.system('$HADOOP_HOME/bin/hadoop dfs -rmr /out*')
+
     generate(query)
 
     query = query.split(' ')
@@ -133,12 +135,15 @@ def select(query):
             -file /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
             -reducer /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
             -input /' +  query[3][:-1]  + '\
-            -output /out5/'
+            -output /out/'
 
 
     # print(comd)
 
     os.system(comd)
+
+
+    os.system('$HADOOP_HOME/bin/hadoop dfs -cat /out/part-00000')
 
     
 
