@@ -67,7 +67,7 @@ def genOpString(cols):
         for col in cols:
             s += "values[" + str(col) + "], "
         s += "sep = ' ')\n"
-    return s
+    return s + '\n'
 
 def genWhereBlock(clauses, conjunctions, table, tables):
     if len(clauses) == 0:
@@ -186,7 +186,7 @@ def generate(query):
             if table in line:
                 tables.update(ast.literal_eval(line))
 
-
+    # tables = {'table1': [('1', 'int'), ('2', 'string')]}
 
     # //check if table is in tables set
 
