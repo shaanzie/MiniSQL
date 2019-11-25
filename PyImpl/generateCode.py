@@ -120,16 +120,16 @@ def updateAggrs(aggrs, table, tables):
             ex1 = ""
 
         if (aggr[0] == "avg" and ["sum", aggr[1]] not in aggrs) or aggr[0] == "sum":
-            s += "sumcol" + str(aggr[1]) + " += " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + "\n\t"
+            s += "\tsumcol" + str(aggr[1]) + " += " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + "\n\t"
 
         if (aggr[0] == "avg" and ["count", aggr[1]] not in aggrs) or aggr[0] == "count":
             s += "\tcountcol" + str(aggr[1]) + " += " + "1\n\t"
 
         elif aggr[0] == "max":
-            s += "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+            s += "\tif maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmaxcol" + str(aggr[1]) + " = float(values[" + str(aggr[1]) + "])\n\t"
 
         elif aggr[0] == "min":
-            s += "if mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+            s += "\tif mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmincol" + str(aggr[1]) + " = float(values[" + str(aggr[1]) + "])\n\t"
 
     return s + '\n\t'
 
@@ -226,7 +226,7 @@ def generate(query):
 
     imports = "#!/usr/bin/python3\nimport csv\nimport sys\n\n"
 
-    processAndPrint = "for line in sys.stdin:\n\tvalues = line.split(',')\n\t" + whereBlock + "print(line)\n\n"
+    processAndPrint = "for line in sys.stdin:\n\tvalues1 = line.split(',')\n\tvalues = [x.strip() for x in values1]\n\ttry:\n\t\t" + whereBlock + "\tprint(line)\n\texcept:\n\t\tpass\n"
     mapper = imports + processAndPrint
 
     print('mapper : \n')
@@ -236,7 +236,7 @@ def generate(query):
     globalVars = genGlobalVars(aggregationsInQuery) + '\n'
     updateStatements = updateAggrs(aggregationsInQuery, table, tables)
     globalVarString = printGlobalVars(aggregationsInQuery)
-    process = "for line in sys.stdin:\n\ttry:\n\t\tvalues = line.split(',')\n\t\tprint(values)\n\t\t" +  updateStatements + "\t" + outputString + "\t\t" + globalVarString + "\n\texcept:\n\t\tpass"
+    process = "for line in sys.stdin:\n\ttry:\n\t\tvalues1 = line.split(',')\n\t\tvalues = [x.strip() for x in values1]\n\t" +  updateStatements + "\t" + outputString + "\t\t" + "\n\texcept:\n\t\tpass\n"+ globalVarString
 
     reducer = imports + globalVars + process
     print("reducer: \n")

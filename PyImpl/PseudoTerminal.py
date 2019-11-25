@@ -54,25 +54,6 @@ def parse_load(query):
     return 0
     
 
-def parse_select(query):
-
-    if(re.search(r"(([a-zA-Z0-9_\-\.]+))", query[1]) or query[1] == '*'):
-
-        if(query[2] == 'from'):
-        
-            if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[3]) and exists(query[3])):
-        
-                if(query[4] == 'where'):
-
-                    if(re.search(r"([a-zA-Z0-9_\-\.]+)\=([a-zA-Z0-9_\-\.]+)", query[5])):
-                
-                        return 1
-
-                elif(query[3][-1] == ';'):
-
-                    return 1
-    return 0
-
 def parse_delete(query):
 
     if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[1]) and exists(query[1])):
@@ -134,7 +115,7 @@ def select(query):
             -mapper /home/hduser/MiniSQL/PyImpl/mapper_generated.py \
             -file /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
             -reducer /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
-            -input /' +  query[3][:-1]  + '\
+            -input /' +  query[3].replace(";","")  + '\
             -output /out/'
 
 
