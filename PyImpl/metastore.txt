@@ -3,3 +3,4 @@
 {'test/test.csv': [('col2', 'int')]}
 {'meh/meh.csv': [('col1', 'int')]}
 {'bigdata/test.csv': [('c1', 'float'), ('c2', 'float')]}
+{'raw/fight.csv': [('name', 'str'), ('height', 'str'), ('weight', 'str'), ('reach', 'str'), ('stance', 'str'), ('dob', 'str')]}

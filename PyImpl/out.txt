@@ -1,0 +1,1 @@
+packageJobJar: [/home/hduser/MiniSQL/PyImpl/mapper_generated.py, /home/hduser/MiniSQL/PyImpl/reducer_generated.py] [] /tmp/streamjob7205145403006479306.jar tmpDir=null

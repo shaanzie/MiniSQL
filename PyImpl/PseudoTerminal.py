@@ -118,15 +118,8 @@ def select(query):
             -input /' +  query[3].replace(";","")  + '\
             -output /out/'
 
-
-    # print(comd)
-
-    os.system(comd)
-
-
     os.system('$HADOOP_HOME/bin/hadoop dfs -cat /out/part-00000')
-
-    
+	    
 
 def delete(query):
 

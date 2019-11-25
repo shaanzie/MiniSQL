@@ -226,11 +226,8 @@ def generate(query):
 
     imports = "#!/usr/bin/python3\nimport csv\nimport sys\n\n"
 
-    processAndPrint = "for line in sys.stdin:\n\tvalues1 = line.split(',')\n\tvalues = [x.strip() for x in values1]\n\ttry:\n\t\t" + whereBlock + "\tprint(line)\n\texcept:\n\t\tpass\n"
+    processAndPrint = "for line in sys.stdin:\n\tvalues1 = line.lower().split(',')\n\tvalues = [x.strip() for x in values1]\n\ttry:\n\t\t" + whereBlock + "\tprint(line)\n\texcept:\n\t\tpass\n"
     mapper = imports + processAndPrint
-
-    print('mapper : \n')
-    print(mapper)
 
 
     globalVars = genGlobalVars(aggregationsInQuery) + '\n'
@@ -239,8 +236,6 @@ def generate(query):
     process = "for line in sys.stdin:\n\ttry:\n\t\tvalues1 = line.split(',')\n\t\tvalues = [x.strip() for x in values1]\n\t" +  updateStatements + "\t" + outputString + "\t\t" + "\n\texcept:\n\t\tpass\n"+ globalVarString
 
     reducer = imports + globalVars + process
-    print("reducer: \n")
-    print(reducer)
 
     if valid:
         mFile = open("./mapper_generated.py", "w")
