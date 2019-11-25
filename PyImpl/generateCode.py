@@ -123,7 +123,7 @@ def updateAggrs(aggrs, table, tables):
             s += "sumcol" + str(aggr[1]) + " += " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + "\n\t"
 
         if (aggr[0] == "avg" and ["count", aggr[1]] not in aggrs) or aggr[0] == "count":
-            s += "countcol" + str(aggr[1]) + " += " + "1\n\t"
+            s += "\tcountcol" + str(aggr[1]) + " += " + "1\n\t"
 
         elif aggr[0] == "max":
             s += "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
@@ -236,7 +236,7 @@ def generate(query):
     globalVars = genGlobalVars(aggregationsInQuery) + '\n'
     updateStatements = updateAggrs(aggregationsInQuery, table, tables)
     globalVarString = printGlobalVars(aggregationsInQuery)
-    process = "for line in sys.stdin:\n\ttry:\n\t\tvalues = line.split(',')\n\t\t" +  updateStatements + "\t\t" + outputString + "\t\t" + globalVarString + "\n\texcept:\n\t\tprint('Query Error')"
+    process = "for line in sys.stdin:\n\ttry:\n\t\tvalues = line.split(',')\n\t\tprint(values)\n\t\t" +  updateStatements + "\t" + outputString + "\t\t" + globalVarString + "\n\texcept:\n\t\tpass"
 
     reducer = imports + globalVars + process
     print("reducer: \n")
