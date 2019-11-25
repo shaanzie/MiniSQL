@@ -77,7 +77,7 @@ def genWhereBlock(clauses, conjunctions, table, tables):
     i = 0
     for clause in clauses:
         dt = getDataTypeFromIndex(clause[0], table, tables)
-        if dt != "string":
+        if dt != "str":
             ex0 = dt + "("
             ex1 = ")"
         else:
@@ -101,8 +101,11 @@ def genGlobalVars(aggregations):
                 s += "countcol" + str(aggr[1]) + " = 0\n"
             if ["sum", aggr[1]] not in aggregations:
                 s += "sumcol"+ str(aggr[1]) + " = 0\n"
+        if aggr[0] == "min":
+            s += "mincol"+ str(aggr[1]) + " = sys.maxsize\n"
         else:
             s += aggr[0] + "col" + str(aggr[1]) + " = 0\n"
+
     return s
 
 def updateAggrs(aggrs, table, tables):
@@ -123,10 +126,10 @@ def updateAggrs(aggrs, table, tables):
             s += "countcol" + str(aggr[1]) + " += " + "1\n\t"
 
         elif aggr[0] == "max":
-            s += "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "])" + ex1 + ":\n\t\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+            s += "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmaxcol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
 
         elif aggr[0] == "min":
-            s += "if mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]):\n\t\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
+            s += "if mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmincol" + str(aggr[1]) + " = values[" + str(aggr[1]) + "]\n\t"
 
     return s + '\n\t'
 
@@ -186,7 +189,7 @@ def generate(query):
             if table in line:
                 tables.update(ast.literal_eval(line))
 
-    # tables = {'table1': [('1', 'int'), ('2', 'string')]}
+    # tables = {'table1': [('1', 'int'), ('2', 'str')]}
 
     # //check if table is in tables set
 
