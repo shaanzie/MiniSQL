@@ -115,8 +115,10 @@ def select(query):
             -mapper /home/hduser/MiniSQL/PyImpl/mapper_generated.py \
             -file /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
             -reducer /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
-            -input /' +  query[3].replace(";","")  + '\
+            -input /' +  query[3][:-1]  + '\
             -output /out/'
+
+    os.system(comd)
 
     os.system('$HADOOP_HOME/bin/hadoop dfs -cat /out/part-00000')
 	    
