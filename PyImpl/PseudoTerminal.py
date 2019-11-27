@@ -56,7 +56,7 @@ def parse_load(query):
 
 def parse_delete(query):
 
-    if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[1]) and exists(query[1])):
+    if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[1])):
 
         return 1
 
@@ -115,7 +115,7 @@ def select(query):
             -mapper /home/hduser/MiniSQL/PyImpl/mapper_generated.py \
             -file /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
             -reducer /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
-            -input /' +  query[3][:-1]  + '\
+            -input /' +  query[3].replace(";","")  + '\
             -output /out/'
 
     os.system(comd)
@@ -132,15 +132,7 @@ def delete(query):
 
     with open('metastore.txt', 'w') as file:
         for line in lines:
-            if query[1] not in line:
-                 file.write(line)
-
-    with open('metastore-datatypes.txt', 'r') as file:
-        lines = file.readlines()
-
-    with open('metastore-datatypes.txt', 'w') as file:
-        for line in lines:
-            if query[1] not in line:
+            if query[1][:-1] not in line:
                  file.write(line)
 
 
