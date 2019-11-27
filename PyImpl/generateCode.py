@@ -3,12 +3,27 @@ import os
 
 
 def getIndex(column, table, tables):
+    """return the index of a column in a table given its name"""
     i = 0
     colNames = [x[0] for x in tables[table]]
     return colNames.index(column.strip())
 
 def parseProjections(projections, table, tables):
-    # //only columns for now
+
+    """
+    parseProjections: function returns a tuple of lists.
+    indices contains the columns that need to be output in the end
+    aggregations is a list of lists where the first element is the aggregation
+    and the second is the index of the column it is performed on
+
+    projections: list of strings.
+    each of the strings is either a column name
+    or an aggregation in the format aggr(column_name)
+
+    table: current table
+
+    tables: the list of all tables that have been loaded at some point"""
+
     aggregations = []
     indices = []
 
@@ -33,13 +48,26 @@ def parseProjections(projections, table, tables):
     return (indices, aggregations)
 
 def getDataTypeFromName(col, table, tables):
+    """return datatype of a column based on the schema, takes column name as input"""
     return tables[table][getIndex(col, table, tables)][1]
 
 def getDataTypeFromIndex(ind, table, tables):
+    """returns datatype of a column based on the column index and the schema loaded"""
     return tables[table][ind][1]
 
 def parseClauses(whereClauses, table, tables):
-    # assuming clauses only based on preexisting data
+    # assumption: where clauses only on data that is available before the query is run
+    """ input : whereClauses - a list of strings containing all the where clauses
+        table : current table
+        tables : a dictionary of all tables that were loaded
+
+        return a list of lists where the first element is the column index of the column used in comparison
+        and the second element is the condition that needs to be checked. The second element is output as plain Python
+        so its behaviour is the same as it would be in python
+
+        Datatype checking to make sure we are not comparing strings with a non equality based operator
+    """
+    print(whereClauses)
     parsedClauses = []
     for clause in whereClauses:
         if '==' in clause:
@@ -61,10 +89,14 @@ def parseClauses(whereClauses, table, tables):
             parsedClauses.append((getIndex(col, table, tables), condn))
         else:
             raise Exception("invalid data type")
+    print(parsedClauses)
     return parsedClauses, []
 
 
 def genOpString(cols):
+
+    """ input is a list of indices
+    generates the output string based on what projections are necessary based on their column indicies """
     s = ""
     if len(cols):
         s += "print("
@@ -74,6 +106,15 @@ def genOpString(cols):
     return s + '\n'
 
 def genWhereBlock(clauses, conjunctions, table, tables, indentation):
+
+    """ generates a conditional where block.
+        clauses come from parseClauses, and contain a list of (col_index, condition)s
+        conjunctions is a list of conjunctions (in this case "and" and "or"), in the order they were specified.
+        No support for nesting, and will be rendered in plain python, so behaviour remains consistent with plain python
+        indentation to make further nesting within other blocks easier
+
+        outputs a string that is an if condition
+        """
     if len(clauses) == 0:
         return ""
 
@@ -97,6 +138,15 @@ def genWhereBlock(clauses, conjunctions, table, tables, indentation):
     return s
 
 def genGlobalVars(aggregations):
+
+    """
+        input is a list of lists [[aggr, col_index]]
+        output will be all the global variables required for the aggregation
+        variable naming to avoid clashes = aggregation + col_number
+        However, there is no duplicates checking
+
+        average needs count and sum, and is handled as a special case to avoid duplicate statements.
+        """
     s = ""
 
     for aggr in aggregations:
@@ -113,6 +163,16 @@ def genGlobalVars(aggregations):
     return s
 
 def updateAggrs(aggrs, table, tables, indentation):
+
+    """
+    input is a list of lists [[aggr, col_index]]
+    output will be all update statements on the global variables
+    using the same naming convention as above
+    each aggregation is dealt with as a separate case and avg is taken as a part of sum and/or count
+
+    Outputs a block of code based on the indentation level required that consist of the required update statements
+
+    """
     s = ""
     for aggr in aggrs:
         dt = getDataTypeFromIndex(aggr[1], table, tables)
@@ -138,6 +198,12 @@ def updateAggrs(aggrs, table, tables, indentation):
     return s
 
 def printGlobalVars(aggrs):
+
+    """
+    prints all the global variables toward the end.
+    using the same naming convention as above, so we know the variables exist, and are updated before we reach this stage
+    """
+
     s = ""
     for aggr in aggrs:
         if aggr[0] == "avg":
@@ -148,9 +214,16 @@ def printGlobalVars(aggrs):
 
 
 def generate(query, pid):
+
+    """ query based on which the code is generated
+    pid to ensure uniqueness in a session (not across)"""
+
+    #standardizing input
     query = query.lower()
     query = query.replace(';', ' ;').replace(",", ", ")
     tokens = query.split()
+
+    """exhaustive set of aggregations handled"""
     aggregations = {"sum", "min", "max", "avg", "count"}
 
     columnsInQuery = []
@@ -158,11 +231,14 @@ def generate(query, pid):
 
     whereClauses = []
     whereClausesMapper = set()
+
+    #dummy
     whereClausesReducer = set()
 
     i = 0
     valid = 1
 
+    # dealing with selects only
     if tokens[i] != "select":
         valid = 0
 
@@ -170,14 +246,10 @@ def generate(query, pid):
     projections = []
 
 
-    # data types must be taken into account for aggregations min, max, sum, avg for strings
     # only allowed string comparisons are "==" and "!="
     # type casting is necessary for comparisons and updates
 
-
-    # doesnt check if the thing being checked against in where is a string or not
-
-    # //assuming the query has a valid structure
+    # assuming the query has a valid structure
     while valid and tokens[i] != "from":
         projections.append(tokens[i].replace(",", ""))
         i += 1
@@ -186,6 +258,8 @@ def generate(query, pid):
     i += 1
     table = tokens[i]
 
+
+    # read schema from the metastore
     tables = dict()
     with open('metastore.txt', 'r') as file:
         lines = file.readlines()
@@ -195,7 +269,6 @@ def generate(query, pid):
 
     # tables = {'table1': [('1', 'int'), ('2', 'str')]}
 
-    # //check if table is in tables set
 
     columnsInQuery, aggregationsInQuery = parseProjections(projections, table, tables)
 
@@ -204,6 +277,7 @@ def generate(query, pid):
 
     conjunctions = []
 
+    # checking for a where clause. All clauses encountered will be processed by parseClauses
     if valid and tokens[i] == "where":
         i += 1
         clause = ""
@@ -225,9 +299,12 @@ def generate(query, pid):
 
 
     # all aggregations will be done in the reducer
+    # mapper only changes with the where clauses
+    # sends the whole record to reducer, room for improvement here
     outputString = genOpString(columnsInQuery)
     whereBlock = genWhereBlock(whereClausesMapper, conjunctions, table, tables, '\t\t')
 
+    # mapper: skeletal code with where clauses being the only variable factor here
     imports = "#!/usr/bin/python3\nimport csv\nimport sys\n\n"
 
     processAndPrint = "for line in sys.stdin:\n"
@@ -240,6 +317,10 @@ def generate(query, pid):
     processAndPrint += "\t\tpass\n"
     mapper = imports + processAndPrint
 
+
+    # reducer must handle projection and aggregations
+    # projections are handled in the output string
+    # aggregations are divided into initialization, update and print blocks
 
     globalVars = genGlobalVars(aggregationsInQuery) + '\n'
     updateStatements = updateAggrs(aggregationsInQuery, table, tables, "\t\t\t")
@@ -266,5 +347,7 @@ def generate(query, pid):
         rFile.close()
 
 if __name__ == '__main__':
+
+    # mostly for debugging
     q = input()
     generate(q, "0000")
