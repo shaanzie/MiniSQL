@@ -144,7 +144,7 @@ def printGlobalVars(aggrs):
     return s
 
 
-def generate(query):
+def generate(query, pid):
     query = query.lower()
     query = query.replace(';', ' ;').replace(",", ", ")
     tokens = query.split()
@@ -255,8 +255,8 @@ def generate(query):
     reducer = imports + globalVars + process + globalVarString
 
     if valid:
-        mFile = open("./mapper_generated.py", "w")
-        rFile = open("./reducer_generated.py", "w")
+        mFile = open("./mapper_generated_"+ pid + ".py", "w")
+        rFile = open("./reducer_generated_"+ pid + ".py", "w")
         mFile.write(mapper)
         rFile.write(reducer)
         mFile.close()
