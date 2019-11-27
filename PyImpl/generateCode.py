@@ -1,4 +1,5 @@
 import ast
+import os
 
 
 def getIndex(column, table, tables):
@@ -69,11 +70,11 @@ def genOpString(cols):
         s += "sep = ' ')\n"
     return s + '\n'
 
-def genWhereBlock(clauses, conjunctions, table, tables):
+def genWhereBlock(clauses, conjunctions, table, tables, indentation):
     if len(clauses) == 0:
         return ""
 
-    s = "if "
+    s = indentation + "if "
     i = 0
     for clause in clauses:
         dt = getDataTypeFromIndex(clause[0], table, tables)
@@ -89,7 +90,7 @@ def genWhereBlock(clauses, conjunctions, table, tables):
         else :
             s += " " + conjunctions[i] + " "
         i += 1
-    s += "\n\t\t"
+    s += "\n" + indentation
     return s
 
 def genGlobalVars(aggregations):
@@ -108,7 +109,7 @@ def genGlobalVars(aggregations):
 
     return s
 
-def updateAggrs(aggrs, table, tables):
+def updateAggrs(aggrs, table, tables, indentation):
     s = ""
     for aggr in aggrs:
         dt = getDataTypeFromIndex(aggr[1], table, tables)
@@ -120,18 +121,18 @@ def updateAggrs(aggrs, table, tables):
             ex1 = ""
 
         if (aggr[0] == "avg" and ["sum", aggr[1]] not in aggrs) or aggr[0] == "sum":
-            s += "\tsumcol" + str(aggr[1]) + " += " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + "\n\t"
+            s += indentation + "sumcol" + str(aggr[1]) + " += " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + "\n"
 
         if (aggr[0] == "avg" and ["count", aggr[1]] not in aggrs) or aggr[0] == "count":
-            s += "\tcountcol" + str(aggr[1]) + " += " + "1\n\t"
+            s += indentation + "countcol" + str(aggr[1]) + " += " + "1\n"
 
         elif aggr[0] == "max":
-            s += "\tif maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmaxcol" + str(aggr[1]) + " = float(values[" + str(aggr[1]) + "])\n\t"
+            s += indentation + "if maxcol" + str(aggr[1]) + " < " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n" + indentation + "\tmaxcol" + str(aggr[1]) + " = float(values[" + str(aggr[1]) + "])\n"
 
         elif aggr[0] == "min":
-            s += "\tif mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n\t\t\tmincol" + str(aggr[1]) + " = float(values[" + str(aggr[1]) + "])\n\t"
+            s += indentation + "if mincol" + str(aggr[1]) + " > " + ex0 + "values[" + str(aggr[1]) + "]" + ex1 + ":\n" + indentation + "\tmincol" + str(aggr[1]) + " = float(values[" + str(aggr[1]) + "])\n"
 
-    return s + '\n\t'
+    return s
 
 def printGlobalVars(aggrs):
     s = ""
@@ -222,20 +223,36 @@ def generate(query):
 
     # all aggregations will be done in the reducer
     outputString = genOpString(columnsInQuery)
-    whereBlock = genWhereBlock(whereClausesMapper, conjunctions, table, tables)
+    whereBlock = genWhereBlock(whereClausesMapper, conjunctions, table, tables, '\t\t')
 
     imports = "#!/usr/bin/python3\nimport csv\nimport sys\n\n"
 
-    processAndPrint = "for line in sys.stdin:\n\tvalues1 = line.lower().split(',')\n\tvalues = [x.strip() for x in values1]\n\ttry:\n\t\t" + whereBlock + "\tprint(line)\n\texcept:\n\t\tpass\n"
+    processAndPrint = "for line in sys.stdin:\n"
+    processAndPrint += "\tvalues1 = line.lower().split(',')\n"
+    processAndPrint += "\tvalues = [x.strip() for x in values1]\n"
+    processAndPrint += "\ttry:\n"
+    processAndPrint += whereBlock
+    processAndPrint += "\t\tprint(line)\n"
+    processAndPrint += "\texcept:\n"
+    processAndPrint += "\t\tpass\n"
     mapper = imports + processAndPrint
 
 
     globalVars = genGlobalVars(aggregationsInQuery) + '\n'
-    updateStatements = updateAggrs(aggregationsInQuery, table, tables)
+    updateStatements = updateAggrs(aggregationsInQuery, table, tables, "\t\t\t")
     globalVarString = printGlobalVars(aggregationsInQuery)
-    process = "for line in sys.stdin:\n\ttry:\n\t\tvalues1 = line.split(',')\n\t\tvalues = [x.strip() for x in values1]\n\t" +  updateStatements + "\t" + outputString + "\t\t" + "\n\texcept:\n\t\tpass\n"+ globalVarString
 
-    reducer = imports + globalVars + process
+    process = "for line in sys.stdin:\n"
+    process += "\ttry:\n"
+    process += "\t\tif (len(line.strip()) > 0):\n"
+    process += "\t\t\tvalues1 = line.split(',')\n"
+    process += "\t\t\tvalues = [x.strip() for x in values1]\n"
+    process += updateStatements
+    process += "\t\t\t" + outputString + "\n"
+    process += "\texcept:\n"
+    process += "\t\tpass\n"
+
+    reducer = imports + globalVars + process + globalVarString
 
     if valid:
         mFile = open("./mapper_generated.py", "w")
