@@ -67,7 +67,7 @@ def parseClauses(whereClauses, table, tables):
 
         Datatype checking to make sure we are not comparing strings with a non equality based operator
     """
-    print(whereClauses)
+
     parsedClauses = []
     for clause in whereClauses:
         if '==' in clause:
@@ -89,7 +89,7 @@ def parseClauses(whereClauses, table, tables):
             parsedClauses.append((getIndex(col, table, tables), condn))
         else:
             raise Exception("invalid data type")
-    print(parsedClauses)
+
     return parsedClauses, []
 
 
