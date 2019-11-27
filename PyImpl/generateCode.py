@@ -12,7 +12,10 @@ def parseProjections(projections, table, tables):
     aggregations = []
     indices = []
 
+
     for projection in projections:
+        if 'count(*)' in projection:
+            projection = projection.replace('count(*)', 'count(' + tables[table][0][0] + ')')
         if '(' in projection:
             # this ones an aggregation.
             aggr, col = projection.split('(')[0], projection.split('(')[1][:-1]
@@ -264,4 +267,4 @@ def generate(query, pid):
 
 if __name__ == '__main__':
     q = input()
-    generate(q)
+    generate(q, "0000")
