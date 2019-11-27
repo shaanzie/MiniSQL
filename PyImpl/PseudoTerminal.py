@@ -106,15 +106,18 @@ def select(query):
 
     os.system('$HADOOP_HOME/bin/hadoop dfs -rmr /out*')
 
-    generate(query)
+    pid = os.getpid()
+
+    generate(query, str(pid))
 
     query = query.replace(', ', ',').split(' ')
 
+
     comd =  '$HADOOP_HOME/bin/hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-*streaming*.jar \
-            -file /home/hduser/MiniSQL/PyImpl/mapper_generated.py \
-            -mapper /home/hduser/MiniSQL/PyImpl/mapper_generated.py \
-            -file /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
-            -reducer /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
+            -file /home/hduser/MiniSQL/PyImpl/mapper_generated_'+ str(pid) + '.py \
+            -mapper /home/hduser/MiniSQL/PyImpl/mapper_generated_'+ str(pid) + '.py \
+            -file /home/hduser/MiniSQL/PyImpl/reducer_generated_'+ str(pid) + '.py \
+            -reducer /home/hduser/MiniSQL/PyImpl/reducer_generated_'+ str(pid) + '.py  \
             -input /' +  query[3].replace(";", "")  + '\
             -output /out/'
 
