@@ -37,7 +37,7 @@ def exists(file):
         if(file in line):
 
             return 1
-    
+
     return 0
 
 def parse_load(query):
@@ -45,14 +45,14 @@ def parse_load(query):
     if(re.search(r"^([a-zA-Z0-9_\-\.]+)\/([a-zA-Z0-9_\-\.]+)\.[csv$]", query[1])):
 
         if(query[2] == 'as'):
-        
+
             for i in query[3][1:-1].split(","):
-        
+
                 if(re.search(r"^([a-zA-Z0-9_\-\.]+)\:([a-zA-Z0-9_\-\.]+)", i)):
-        
+
                     return 1
     return 0
-    
+
 
 def parse_delete(query):
 
@@ -61,7 +61,7 @@ def parse_delete(query):
         return 1
 
     return 0
-    
+
 
 def load(query):
 
@@ -74,28 +74,28 @@ def load(query):
 
 
     for i in query[3][1:-2].split(","):
-        
+
         columns.append((i.split(":")[0], i.split(":")[1]))
 
     table_columns[database] = columns
 
     with open('metastore.txt', 'a+') as file:
-        
+
         lines = file.readlines()
-        
+
 
     flag = 0
 
     with open('metastore.txt', 'a+') as file:
 
         for line in lines:
-            
+
             if(query[1] in line):
                 flag = 1
                 file.write(str(table_columns) + '\n')
             else:
                 file.write(line)
-        
+
         if flag == 0:
             file.write(str(table_columns) + '\n')
 
@@ -108,20 +108,20 @@ def select(query):
 
     generate(query)
 
-    query = query.split(' ')
+    query = query.replace(', ', ',').split(' ')
 
     comd =  '$HADOOP_HOME/bin/hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-*streaming*.jar \
             -file /home/hduser/MiniSQL/PyImpl/mapper_generated.py \
             -mapper /home/hduser/MiniSQL/PyImpl/mapper_generated.py \
             -file /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
             -reducer /home/hduser/MiniSQL/PyImpl/reducer_generated.py  \
-            -input /' +  query[3].replace(";","")  + '\
+            -input /' +  query[3].replace(";", "")  + '\
             -output /out/'
 
     os.system(comd)
 
     os.system('$HADOOP_HOME/bin/hadoop dfs -cat /out/part-00000')
-	    
+
 
 def delete(query):
 
@@ -137,17 +137,17 @@ def delete(query):
 
 
 while(True):
-    
+
     print('>')
-    query = input()  
+    query = input()
     query_copy = query.split(' ')
 
     if(query_copy[0] == 'exit'):
         exit(1)
-    
+
     elif(query_copy[0] == 'load' and parse_load(query_copy)):
         load(query)
-    
+
     elif(query_copy[0] == 'select'):
         select(query)
 
