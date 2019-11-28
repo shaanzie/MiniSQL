@@ -2,6 +2,7 @@ import re
 # from fabric.api import local
 # from fabric.context_managers import settings
 import os
+from pyfiglet import Figlet
 from generateCode import generate
 
 def file_on_hdfs(file):
@@ -140,9 +141,19 @@ def delete(query):
                  file.write(line)
 
 
+os.system('clear')
+print('____________________________________________________________________________')
+print()
+print()
+f = Figlet(font='slant')
+print(f.renderText('     MiniSQL'))
+
+print('____________________________________________________________________________')
+print()
+
 while(True):
 
-    print('>')
+    print('>', end = ' ')
     query = input()
     query_copy = query.split(' ')
 
