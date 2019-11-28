@@ -125,6 +125,7 @@ def select(query):
 
     os.system('$HADOOP_HOME/bin/hadoop dfs -cat /out/part-00000')
 
+    os.system('rm -rf /home/hduser/MiniSQL/PyImpl/reducer_generated_'+ str(pid) + '.py /home/hduser/MiniSQL/PyImpl/mapper_generated_'+ str(pid) + '.py')
 
 def delete(query):
 
