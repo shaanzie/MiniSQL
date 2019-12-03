@@ -13,3 +13,5 @@ This project mainly deals with the MapReduce Python API, and this can be found i
 
 ### Delete
 `delete bigdata/test.csv;`
+
+Please refer to the wiki for more details and the functioning of the engine.
